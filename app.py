@@ -9,6 +9,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 SECRET_KEY = "12345"
 
+# Upload image
 @app.route('/upload', methods=['POST'])
 def upload():
     if request.headers.get("Authorization") != SECRET_KEY:
@@ -24,6 +25,7 @@ def upload():
 
     return "OK"
 
+# Show latest image (FIXED)
 @app.route('/latest')
 def latest():
     files = os.listdir(UPLOAD_FOLDER)
@@ -31,26 +33,41 @@ def latest():
     if len(files) == 0:
         return "No images yet"
 
-    files.sort(reverse=True)
+    files = sorted(
+        files,
+        key=lambda x: os.path.getmtime(os.path.join(UPLOAD_FOLDER, x)),
+        reverse=True
+    )
+
     return send_from_directory(UPLOAD_FOLDER, files[0])
 
-# 🔥 NEW: Gallery
+# Show all images (Gallery)
 @app.route('/gallery')
 def gallery():
     files = os.listdir(UPLOAD_FOLDER)
-    files.sort(reverse=True)
+
+    if len(files) == 0:
+        return "No images yet"
+
+    files = sorted(
+        files,
+        key=lambda x: os.path.getmtime(os.path.join(UPLOAD_FOLDER, x)),
+        reverse=True
+    )
 
     html = "<h2>All Images</h2>"
 
     for file in files:
-        html += f'<div><img src="/image/{file}" width="300"><p>{file}</p></div>'
+        html += f'<div style="margin-bottom:20px;"><img src="/image/{file}" width="300"><p>{file}</p></div>'
 
     return html
 
+# Serve image
 @app.route('/image/<filename>')
 def get_image(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
 
+# Home
 @app.route('/')
 def home():
     return "Server Running"
