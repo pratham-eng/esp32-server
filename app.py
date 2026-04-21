@@ -24,7 +24,6 @@ def upload():
 
     return "OK"
 
-# 👉 NEW ROUTE (IMPORTANT)
 @app.route('/latest')
 def latest():
     files = os.listdir(UPLOAD_FOLDER)
@@ -34,6 +33,23 @@ def latest():
 
     files.sort(reverse=True)
     return send_from_directory(UPLOAD_FOLDER, files[0])
+
+# 🔥 NEW: Gallery
+@app.route('/gallery')
+def gallery():
+    files = os.listdir(UPLOAD_FOLDER)
+    files.sort(reverse=True)
+
+    html = "<h2>All Images</h2>"
+
+    for file in files:
+        html += f'<div><img src="/image/{file}" width="300"><p>{file}</p></div>'
+
+    return html
+
+@app.route('/image/<filename>')
+def get_image(filename):
+    return send_from_directory(UPLOAD_FOLDER, filename)
 
 @app.route('/')
 def home():
