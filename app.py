@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, send_from_directory
 import time
 import os
 
@@ -15,12 +15,25 @@ def upload():
         return "Unauthorized", 401
 
     image = request.data
-    filename = f"{UPLOAD_FOLDER}/img_{int(time.time())}.jpg"
+    filename = f"img_{int(time.time())}.jpg"
 
-    with open(filename, "wb") as f:
+    filepath = os.path.join(UPLOAD_FOLDER, filename)
+
+    with open(filepath, "wb") as f:
         f.write(image)
 
     return "OK"
+
+# 👉 NEW ROUTE (IMPORTANT)
+@app.route('/latest')
+def latest():
+    files = os.listdir(UPLOAD_FOLDER)
+
+    if len(files) == 0:
+        return "No images yet"
+
+    files.sort(reverse=True)
+    return send_from_directory(UPLOAD_FOLDER, files[0])
 
 @app.route('/')
 def home():
